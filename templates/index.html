@@ -195,6 +195,119 @@
   .upload-btn.camera svg { stroke: var(--green-bright); }
   .upload-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
+  /* ---------------- Live camera modal ---------------- */
+  .camera-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 6, 9, 0.92);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .camera-modal.open { display: flex; }
+  .camera-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: popIn 0.3s cubic-bezier(.2,1.4,.4,1) both;
+  }
+  .camera-box h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .camera-box h3 .cam-count { font-size: 12px; color: var(--grey); font-weight: 500; }
+  .camera-viewport {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .camera-viewport video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .camera-status {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--grey);
+    font-size: 13px;
+    text-align: center;
+    padding: 20px;
+  }
+  .camera-flash {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .camera-flash.flash { animation: flashPop 0.35s ease; }
+  @keyframes flashPop {
+    0% { opacity: 0.85; }
+    100% { opacity: 0; }
+  }
+  .camera-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .camera-controls .side-btn {
+    border: 1px solid var(--border);
+    background: var(--bg-2);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    flex: 1;
+  }
+  .camera-controls .side-btn:hover { border-color: var(--saffron); }
+  .shutter-btn {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 4px solid var(--green-bright);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform .12s ease;
+  }
+  .shutter-btn:hover { transform: scale(1.06); }
+  .shutter-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .camera-thumbs {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .camera-thumbs img {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
   .thumb-grid { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 18px; }
   .thumb { position: relative; width: 128px; animation: popIn 0.35s cubic-bezier(.2,1.4,.4,1) both; }
   .thumb img {
@@ -351,7 +464,6 @@
       <div class="label">Click or drag photos here</div>
       <div class="hint">Up to 4 images — front, back, side, any angle with printed declarations</div>
       <input type="file" id="imageInput" accept="image/*" multiple>
-      <input type="file" id="cameraInput" accept="image/*" capture="environment">
     </div>
     <div class="thumb-grid" id="thumbGrid"></div>
     <div class="image-count" id="imageCount"></div>
@@ -360,6 +472,27 @@
       <span class="btn-label">Analyze Compliance</span>
     </button>
     <div class="status-line" id="statusLine"></div>
+  </div>
+
+  <div class="camera-modal" id="cameraModal">
+    <div class="camera-box">
+      <h3>
+        Take Photo
+        <span class="cam-count" id="camCount"></span>
+      </h3>
+      <div class="camera-viewport">
+        <video id="cameraVideo" autoplay playsinline muted></video>
+        <div class="camera-status" id="cameraStatus">Starting camera…</div>
+        <div class="camera-flash" id="cameraFlash"></div>
+      </div>
+      <canvas id="cameraCanvas" style="display:none;"></canvas>
+      <div class="camera-controls">
+        <button type="button" class="side-btn" id="camCloseBtn">Done</button>
+        <button type="button" class="shutter-btn" id="camShutterBtn" title="Capture"></button>
+        <button type="button" class="side-btn" id="camSwitchBtn">Switch</button>
+      </div>
+      <div class="camera-thumbs" id="cameraThumbs"></div>
+    </div>
   </div>
 
   <div class="card" id="resultsCard">
@@ -388,20 +521,14 @@ const MAX_IMAGES = 4;
 
 const dz = document.getElementById('dz-upload');
 const imageInput = document.getElementById('imageInput');
-const cameraInput = document.getElementById('cameraInput');
 const galleryBtn = document.getElementById('galleryBtn');
 const cameraBtn = document.getElementById('cameraBtn');
 
 dz.addEventListener('click', () => imageInput.click());
 galleryBtn.addEventListener('click', () => imageInput.click());
-cameraBtn.addEventListener('click', () => cameraInput.click());
+cameraBtn.addEventListener('click', () => openCamera());
 
 imageInput.addEventListener('change', (e) => {
-  addFiles(Array.from(e.target.files));
-  e.target.value = '';
-});
-
-cameraInput.addEventListener('change', (e) => {
   addFiles(Array.from(e.target.files));
   e.target.value = '';
 });
@@ -464,6 +591,114 @@ function renderThumbs() {
 function removeImage(idx) {
   selectedFiles.splice(idx, 1);
   renderThumbs();
+}
+
+// ---------------- Live camera modal ----------------
+const cameraModal = document.getElementById('cameraModal');
+const cameraVideo = document.getElementById('cameraVideo');
+const cameraStatus = document.getElementById('cameraStatus');
+const cameraFlash = document.getElementById('cameraFlash');
+const cameraCanvas = document.getElementById('cameraCanvas');
+const camCount = document.getElementById('camCount');
+const camShutterBtn = document.getElementById('camShutterBtn');
+const camCloseBtn = document.getElementById('camCloseBtn');
+const camSwitchBtn = document.getElementById('camSwitchBtn');
+const cameraThumbs = document.getElementById('cameraThumbs');
+
+let cameraStream = null;
+let facingMode = 'environment'; // rear camera by default on phones
+let capturedThisSession = [];
+
+async function openCamera() {
+  if (selectedFiles.length >= MAX_IMAGES) return;
+  cameraModal.classList.add('open');
+  capturedThisSession = [];
+  cameraThumbs.innerHTML = '';
+  await startStream(facingMode);
+}
+
+async function startStream(mode) {
+  stopStream();
+  cameraStatus.style.display = 'flex';
+  cameraStatus.textContent = 'Starting camera…';
+  camShutterBtn.disabled = true;
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    cameraStatus.textContent = 'Camera access is not supported in this browser.';
+    return;
+  }
+
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: mode }, width: { ideal: 1280 }, height: { ideal: 960 } },
+      audio: false
+    });
+    cameraVideo.srcObject = cameraStream;
+    cameraStatus.style.display = 'none';
+    camShutterBtn.disabled = false;
+    updateCamCount();
+  } catch (err) {
+    cameraStatus.textContent = 'Could not access camera: ' + err.message
+      + '. Check camera permissions for this site.';
+  }
+}
+
+function stopStream() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+}
+
+function updateCamCount() {
+  const remaining = MAX_IMAGES - selectedFiles.length;
+  camCount.textContent = `${remaining} more of ${MAX_IMAGES} allowed`;
+}
+
+camShutterBtn.addEventListener('click', async () => {
+  if (!cameraStream || selectedFiles.length >= MAX_IMAGES) return;
+
+  const track = cameraStream.getVideoTracks()[0];
+  const settings = track.getSettings ? track.getSettings() : {};
+  const w = settings.width || cameraVideo.videoWidth;
+  const h = settings.height || cameraVideo.videoHeight;
+
+  cameraCanvas.width = w;
+  cameraCanvas.height = h;
+  const ctx = cameraCanvas.getContext('2d');
+  ctx.drawImage(cameraVideo, 0, 0, w, h);
+
+  cameraFlash.classList.remove('flash');
+  void cameraFlash.offsetWidth; // restart animation
+  cameraFlash.classList.add('flash');
+
+  cameraCanvas.toBlob((blob) => {
+    if (!blob) return;
+    const file = new File([blob], `camera_${Date.now()}.jpg`, { type: 'image/jpeg' });
+    addFiles([file]);
+
+    const thumbUrl = URL.createObjectURL(blob);
+    const img = document.createElement('img');
+    img.src = thumbUrl;
+    cameraThumbs.appendChild(img);
+
+    updateCamCount();
+    if (selectedFiles.length >= MAX_IMAGES) {
+      camShutterBtn.disabled = true;
+    }
+  }, 'image/jpeg', 0.9);
+});
+
+camSwitchBtn.addEventListener('click', () => {
+  facingMode = facingMode === 'environment' ? 'user' : 'environment';
+  startStream(facingMode);
+});
+
+camCloseBtn.addEventListener('click', closeCamera);
+
+function closeCamera() {
+  stopStream();
+  cameraModal.classList.remove('open');
 }
 
 async function runScan() {
