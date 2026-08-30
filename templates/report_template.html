@@ -138,14 +138,14 @@
     <tr><th>Field</th><th>Detected Value</th><th>Source</th><th>Status</th><th>Reason</th></tr>
     {% for d in report.declarations %}
     <tr>
-      <td>{{ d.label }}</td>
-      <td>{{ d.value or "—" }}</td>
+      <td>{{ d.label|wrap_slashes }}</td>
+      <td>{{ (d.value or "—")|wrap_slashes }}</td>
       <td>{{ d.source_image or "—" }}</td>
       <td>
         {% if d.compliant %}<span class="status-ok">Compliant</span>
         {% else %}<span class="status-bad">Violation</span>{% endif %}
       </td>
-      <td>{{ d.reason or "—" }}</td>
+      <td>{{ (d.reason or "—")|wrap_slashes }}</td>
     </tr>
     {% endfor %}
   </table>
@@ -154,7 +154,7 @@
   {% if report.violations %}
   <ul class="violation-list">
     {% for v in report.violations %}
-    <li><b>{{ v.label }}:</b> {{ v.reason or "Missing or non-compliant declaration." }}</li>
+    <li><b>{{ v.label|wrap_slashes }}:</b> {{ (v.reason or "Missing or non-compliant declaration.")|wrap_slashes }}</li>
     {% endfor %}
   </ul>
   {% else %}
@@ -165,7 +165,7 @@
   {% if report.additional_observations %}
   <ul class="violation-list">
     {% for obs in report.additional_observations %}
-    <li>{{ obs }}</li>
+    <li>{{ obs|wrap_slashes }}</li>
     {% endfor %}
   </ul>
   {% else %}
