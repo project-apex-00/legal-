@@ -32,6 +32,7 @@ GEMINI_MAX_RETRIES = int(os.environ.get("GEMINI_MAX_RETRIES", "3"))
 GEMINI_RETRY_BASE_DELAY = float(os.environ.get("GEMINI_RETRY_BASE_DELAY", "3"))
 
 MAX_IMAGE_DIMENSION = 1600  # downscale large photos before sending to Gemini
+MAX_IMAGES_PER_SCAN = 4
 
 BASE_DIR = os.path.dirname(__file__)
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
@@ -43,17 +44,6 @@ for d in (UPLOAD_DIR, OUTPUT_DIR, JOBS_DIR):
 
 app = Flask(__name__)
 jinja_env = Environment(loader=FileSystemLoader("templates"))
-
-def wrap_slashes(text):
-    """xhtml2pdf's renderer doesn't reliably break long slash-separated
-    words (e.g. 'manufacture/packing/import') even with CSS word-wrap,
-    so the last segment can overflow the table cell. Insert a zero-width
-    space after each '/' as an explicit break point."""
-    if not text:
-        return text
-    return text.replace("/", "/\u200b")
-
-jinja_env.filters["wrap_slashes"] = wrap_slashes
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 
@@ -201,27 +191,25 @@ def call_gemini_vision(prompt: str, image_paths: list, temperature: float = 0.1)
 # Prompt
 # ---------------------------------------------------------------------------
 
-def build_extraction_prompt() -> str:
+def build_extraction_prompt(num_images: int) -> str:
     field_lines = "\n".join(
         f'{i + 1}. {f["label"]} (field key: "{f["field"]}") — Rule: {f["rule"]}'
         for i, f in enumerate(DECLARATION_FIELDS)
     )
+    image_labels = ", ".join(f'"image {i + 1}"' for i in range(num_images))
     return f"""You are a Legal Metrology compliance inspector analysing packaged
 commodity label images under the Legal Metrology (Packaged Commodities)
 Rules, 2011.
 
-You are given between 1 and 4 images of a packaged product's label —
-these could be the front panel, back panel, side panel, or any other
-angle showing printed declarations. Use whichever images are provided.
-Read all visible text on every image carefully, including small print.
+You are given {num_images} image(s) of a product's label(s), taken from
+different angles (front, back, side, etc. — not necessarily in that
+order). They are provided to you in this order: {image_labels}. Read all
+visible text on the label(s) carefully, including small print.
 
 For EACH of the following mandatory declarations, determine:
-- whether it is present on any of the images
+- whether it is present on the label(s)
 - the exact value/text found (verbatim, as printed)
-- which image it was found on: describe it as "front", "back", "side",
-  or "unknown" based on what that panel visually appears to be, or
-  "image N" (matching the order the images were provided) if you cannot
-  tell which panel it is
+- which image it was found on, using the same numbering above (e.g. "image 1"), or "unknown" if unclear
 - whether it appears compliant based on the rule given
 - a short, specific reason if it is missing or non-compliant (else null)
 
@@ -244,7 +232,7 @@ exactly this schema:
       "label": "the human-readable label",
       "found": true or false,
       "value": "extracted text or null",
-      "source_image": "front" | "back" | "side" | "unknown" | "image 1" | "image 2" | "image 3" | "image 4" | null,
+      "source_image": "image 1" | "image 2" | ... | "unknown" | null,
       "compliant": true or false,
       "reason": "short explanation if missing/non-compliant, else null"
     }}
@@ -307,36 +295,36 @@ def parse_gemini_json(raw_text: str) -> dict:
 def index():
     return render_template("index.html", fields=DECLARATION_FIELDS)
 
-MAX_IMAGES_PER_SCAN = 4
-
 @app.route("/scan", methods=["POST"])
 def scan():
-    """Accepts 1-4 label images (any panels/angles), runs a single Gemini
-    multimodal call across all of them, stores the structured result as
-    a job."""
+    """Accepts up to MAX_IMAGES_PER_SCAN label images (front/back/side/any
+    angle, from gallery or camera) under the 'images' field, runs a single
+    Gemini multimodal call, stores the structured result as a job."""
     files = request.files.getlist("images")
-    files = [f for f in files if f and f.filename]
 
     if not files:
-        return jsonify({"error": "Please upload at least one label image."}), 400
+        return jsonify({"error": "At least one label image is required."}), 400
+
     if len(files) > MAX_IMAGES_PER_SCAN:
-        return jsonify({"error": f"Please upload at most {MAX_IMAGES_PER_SCAN} images."}), 400
+        return jsonify({
+            "error": f"Too many images — up to {MAX_IMAGES_PER_SCAN} are allowed per scan."
+        }), 400
 
     job_id = uuid.uuid4().hex[:10]
     image_paths = []
 
-    for i, f in enumerate(files, start=1):
+    for idx, f in enumerate(files, start=1):
         ext = os.path.splitext(f.filename)[1].lower()
         if ext not in ALLOWED_EXTENSIONS:
             return jsonify({"error": f"Unsupported file type: {ext}"}), 400
-        path = os.path.join(UPLOAD_DIR, f"{job_id}_img{i}{ext}")
+        path = os.path.join(UPLOAD_DIR, f"{job_id}_img{idx}{ext}")
         f.save(path)
         resize_if_needed(path)
         image_paths.append(path)
 
     start_time = time.time()
     try:
-        prompt = build_extraction_prompt()
+        prompt = build_extraction_prompt(len(image_paths))
         raw = call_gemini_vision(prompt, image_paths)
         result = parse_gemini_json(raw)
 
