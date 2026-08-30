@@ -210,14 +210,18 @@ def build_extraction_prompt() -> str:
 commodity label images under the Legal Metrology (Packaged Commodities)
 Rules, 2011.
 
-You are given images of a product's FRONT label and BACK label (there may
-be one or two images; use whichever are provided). Read all visible text
-on the label(s) carefully, including small print.
+You are given between 1 and 4 images of a packaged product's label —
+these could be the front panel, back panel, side panel, or any other
+angle showing printed declarations. Use whichever images are provided.
+Read all visible text on every image carefully, including small print.
 
 For EACH of the following mandatory declarations, determine:
-- whether it is present on the label(s)
+- whether it is present on any of the images
 - the exact value/text found (verbatim, as printed)
-- which image it was found on: "front", "back", or "unknown"
+- which image it was found on: describe it as "front", "back", "side",
+  or "unknown" based on what that panel visually appears to be, or
+  "image N" (matching the order the images were provided) if you cannot
+  tell which panel it is
 - whether it appears compliant based on the rule given
 - a short, specific reason if it is missing or non-compliant (else null)
 
@@ -240,7 +244,7 @@ exactly this schema:
       "label": "the human-readable label",
       "found": true or false,
       "value": "extracted text or null",
-      "source_image": "front" | "back" | "unknown" | null,
+      "source_image": "front" | "back" | "side" | "unknown" | "image 1" | "image 2" | "image 3" | "image 4" | null,
       "compliant": true or false,
       "reason": "short explanation if missing/non-compliant, else null"
     }}
@@ -303,26 +307,29 @@ def parse_gemini_json(raw_text: str) -> dict:
 def index():
     return render_template("index.html", fields=DECLARATION_FIELDS)
 
+MAX_IMAGES_PER_SCAN = 4
+
 @app.route("/scan", methods=["POST"])
 def scan():
-    """Accepts front (required) and back (optional) images, runs a single
-    Gemini multimodal call, stores the structured result as a job."""
-    front = request.files.get("front")
-    back = request.files.get("back")
+    """Accepts 1-4 label images (any panels/angles), runs a single Gemini
+    multimodal call across all of them, stores the structured result as
+    a job."""
+    files = request.files.getlist("images")
+    files = [f for f in files if f and f.filename]
 
-    if not front:
-        return jsonify({"error": "Front label image is required."}), 400
+    if not files:
+        return jsonify({"error": "Please upload at least one label image."}), 400
+    if len(files) > MAX_IMAGES_PER_SCAN:
+        return jsonify({"error": f"Please upload at most {MAX_IMAGES_PER_SCAN} images."}), 400
 
     job_id = uuid.uuid4().hex[:10]
     image_paths = []
 
-    for label, f in (("front", front), ("back", back)):
-        if not f:
-            continue
+    for i, f in enumerate(files, start=1):
         ext = os.path.splitext(f.filename)[1].lower()
         if ext not in ALLOWED_EXTENSIONS:
             return jsonify({"error": f"Unsupported file type: {ext}"}), 400
-        path = os.path.join(UPLOAD_DIR, f"{job_id}_{label}{ext}")
+        path = os.path.join(UPLOAD_DIR, f"{job_id}_img{i}{ext}")
         f.save(path)
         resize_if_needed(path)
         image_paths.append(path)
