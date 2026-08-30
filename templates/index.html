@@ -6,178 +6,291 @@
 <title>Legal Metrology Compliance Scanner</title>
 <style>
   :root {
-    --ink: #14181A;
-    --forest: #0F3D2E;
-    --amber: #E8A33D;
-    --teal: #2E8B84;
-    --light-teal: #E4F1F0;
-    --light-green: #E7EFEA;
-    --grey: #4A5751;
-    --red: #B3261E;
-    --red-bg: #FBEAEA;
-    --green-bg: #E7F5EC;
-    --green: #1E7A46;
+    --bg: #0B0F14;
+    --bg-2: #10151D;
+    --card: #151B24;
+    --border: #262F3A;
+    --ink: #EAF0F6;
+    --grey: #93A1B0;
+    --saffron: #FF9933;
+    --saffron-bright: #FF7A1A;
+    --green: #138808;
+    --green-bright: #1FAE3A;
+    --navy: #0B1F66;
+    --white: #FFFFFF;
+    --success-bg: #10331F;
+    --success-text: #4ADE80;
+    --danger-bg: #3A1418;
+    --danger-text: #FB7185;
+    --warning-bg: #3A2B0E;
+    --warning-text: #FBBF24;
   }
+
   * { box-sizing: border-box; }
+
   body {
-    font-family: "Helvetica Neue", Arial, sans-serif;
     margin: 0;
-    background: #F6F8F7;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     color: var(--ink);
+    background: var(--bg);
+    min-height: 100vh;
   }
+
+  /* ---------------- Flag stripe ---------------- */
+  .flag-stripe {
+    height: 6px;
+    width: 100%;
+    background: linear-gradient(90deg, var(--saffron) 0%, var(--saffron) 33%, var(--white) 33%, var(--white) 66%, var(--green) 66%, var(--green) 100%);
+  }
+
+  /* ---------------- Header ---------------- */
   header {
-    background: var(--forest);
-    color: white;
-    padding: 18px 24px;
-  }
-  header h1 { margin: 0; font-size: 18px; }
-  header p { margin: 4px 0 0; font-size: 12.5px; color: #CFE4DA; }
-  .wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
-
-  .card {
-    background: white;
-    border: 1px solid #DCE6E1;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-  .card h2 {
-    font-size: 15px;
-    color: var(--forest);
-    margin: 0 0 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-  }
-
-  .upload-row { display: block; }
-  .dropzone {
-    border: 2px dashed #B9CFC5;
-    border-radius: 8px;
-    padding: 24px;
-    text-align: center;
-    cursor: pointer;
-    background: #FAFCFB;
-    transition: border-color .15s;
-  }
-  .dropzone:hover { border-color: var(--teal); }
-  .dropzone .label { font-weight: 600; font-size: 14px; color: var(--forest); }
-  .dropzone .hint { font-size: 12px; color: var(--grey); margin-top: 4px; }
-  input[type=file] { display: none; }
-
-  .thumb-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 16px;
-  }
-  .thumb {
     position: relative;
-    width: 130px;
+    overflow: hidden;
+    padding: 30px 24px 42px;
+    background: linear-gradient(120deg, #1A1006, var(--bg) 55%, #071A0B);
+    background-size: 200% 200%;
+    animation: gradientShift 12s ease infinite;
+    color: var(--white);
   }
-  .thumb img {
-    width: 130px;
-    height: 130px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid #DCE6E1;
-    display: block;
+  @keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
-  .thumb .remove-btn {
+  header::before, header::after {
+    content: "";
     position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 22px;
-    height: 22px;
     border-radius: 50%;
-    background: var(--red);
-    color: white;
-    border: 2px solid white;
+    filter: blur(6px);
+    animation: floatBlob 9s ease-in-out infinite;
+    opacity: 0.35;
+  }
+  header::before { width: 200px; height: 200px; top: -70px; right: 6%; background: var(--saffron); animation-delay: 0s; }
+  header::after  { width: 140px; height: 140px; bottom: -60px; left: 10%; background: var(--green); animation-delay: 2.5s; }
+  @keyframes floatBlob {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-16px) scale(1.08); }
+  }
+  header h1 {
+    margin: 0;
+    font-size: 22px;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.6s ease both;
+  }
+  header p {
+    margin: 6px 0 0;
     font-size: 13px;
-    line-height: 1;
-    cursor: pointer;
+    color: #C7D2DE;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.6s ease 0.1s both;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.7); }
+    70%  { transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -200px 0; }
+    100% { background-position: 200px 0; }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulseRing {
+    0%   { box-shadow: 0 0 0 0 rgba(251,113,133,0.35); }
+    100% { box-shadow: 0 0 0 14px rgba(251,113,133,0); }
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: -22px auto 40px;
+    padding: 0 24px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ---------------- Cards ---------------- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: fadeInUp 0.5s ease both;
+    transition: box-shadow .25s ease;
+  }
+  .card:hover { box-shadow: 0 14px 36px rgba(255,153,51,0.10); }
+
+  .card h2 {
+    font-size: 14px;
+    color: var(--saffron-bright);
+    margin: 0 0 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
   }
-  .thumb .thumb-label {
-    font-size: 11px;
-    color: var(--grey);
+  .card h2::before {
+    content: "";
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--saffron), var(--green));
+  }
+
+  /* ---------------- Upload zone ---------------- */
+  .dropzone {
+    border: 2px dashed #3A4453;
+    border-radius: 12px;
+    padding: 30px 20px;
     text-align: center;
-    margin-top: 4px;
+    cursor: pointer;
+    background: var(--bg-2);
+    transition: border-color .2s ease, transform .15s ease;
   }
-  .image-count { font-size: 12px; color: var(--grey); margin-top: 10px; }
+  .dropzone:hover { border-color: var(--saffron); transform: translateY(-2px); }
+  .dropzone.drag-over {
+    border-color: var(--saffron-bright);
+    background: #221708;
+    transform: scale(1.01);
+  }
+  .dropzone .label { font-weight: 700; font-size: 15px; color: var(--white); }
+  .dropzone .hint { font-size: 12px; color: var(--grey); margin-top: 5px; }
+  input[type=file] { display: none; }
 
+  .thumb-grid { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 18px; }
+  .thumb { position: relative; width: 128px; animation: popIn 0.35s cubic-bezier(.2,1.4,.4,1) both; }
+  .thumb img {
+    width: 128px; height: 128px; object-fit: cover;
+    border-radius: 10px; border: 1px solid var(--border); display: block;
+    transition: transform .2s ease;
+  }
+  .thumb:hover img { transform: scale(1.04); }
+  .thumb .remove-btn {
+    position: absolute; top: -8px; right: -8px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--danger-text); color: #1A1006;
+    border: 2px solid var(--bg); font-size: 14px; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: transform .15s ease;
+  }
+  .thumb .remove-btn:hover { transform: scale(1.15); }
+  .thumb .thumb-label { font-size: 11px; color: var(--grey); text-align: center; margin-top: 5px; }
+  .image-count { font-size: 12.5px; color: var(--saffron-bright); margin-top: 12px; font-weight: 600; }
+
+  /* ---------------- Buttons ---------------- */
   .btn {
-    display: inline-block;
-    background: var(--forest);
-    color: white;
-    border: none;
-    padding: 11px 22px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 16px;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(120deg, var(--saffron-bright), #FF5A1F);
+    color: #1A1006;
+    border: none; padding: 12px 24px; border-radius: 999px;
+    font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 18px;
+    box-shadow: 0 6px 18px rgba(255,122,26,0.35);
+    transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
   }
-  .btn:disabled { background: #9BB3A7; cursor: not-allowed; }
-  .btn.secondary { background: var(--teal); }
-  .btn.ghost { background: transparent; color: var(--forest); border: 1px solid var(--forest); }
-
-  .status-line { font-size: 13px; color: var(--grey); margin-top: 10px; min-height: 18px; }
-
-  .verdict-banner {
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 14px;
-    margin-bottom: 16px;
+  .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(255,122,26,0.45); }
+  .btn:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+  .btn.secondary { background: linear-gradient(120deg, var(--green-bright), var(--green)); color: var(--white); box-shadow: 0 6px 18px rgba(31,174,58,0.3); }
+  .btn.ghost {
+    background: transparent; color: var(--saffron-bright);
+    border: 1.5px solid var(--saffron); box-shadow: none;
   }
-  .verdict-banner.COMPLIANT { background: var(--green-bg); color: var(--green); }
-  .verdict-banner.NON_COMPLIANT { background: var(--red-bg); color: var(--red); }
-  .verdict-banner.NEEDS_REVIEW { background: #FBEBD3; color: #7A4E12; }
+  .btn.ghost:hover { background: #221708; }
 
-  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-  .chip {
-    padding: 8px 14px;
-    border-radius: 999px;
-    font-size: 12.5px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1.5px solid transparent;
-    user-select: none;
-  }
-  .chip.ok { background: var(--green-bg); color: var(--green); border-color: #BFE3CC; }
-  .chip.violation { background: var(--red-bg); color: var(--red); border-color: #F1C3C0; }
-  .chip.active { outline: 2px solid var(--ink); outline-offset: 1px; }
-
-  .field-detail {
-    background: var(--light-green);
-    border-left: 4px solid var(--forest);
-    border-radius: 6px;
-    padding: 14px 16px;
-    font-size: 13.5px;
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(26,16,6,0.4);
+    border-top-color: #1A1006;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
     display: none;
   }
-  .field-detail.visible { display: block; }
-  .field-detail .row { margin-bottom: 6px; }
-  .field-detail .row b { color: var(--forest); }
+  .btn.loading .spinner { display: inline-block; }
 
-  table.decl-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  table.decl-table th, table.decl-table td {
-    border: 1px solid #DCE6E1; padding: 8px 10px; text-align: left; vertical-align: top;
+  .status-line { font-size: 13px; color: var(--grey); margin-top: 12px; min-height: 18px; }
+  .status-line.shimmering {
+    background: linear-gradient(90deg, var(--grey) 40%, var(--saffron-bright) 50%, var(--grey) 60%);
+    background-size: 400px 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shimmer 1.4s linear infinite;
+    font-weight: 600;
   }
-  table.decl-table th { background: var(--teal); color: white; font-size: 12px; }
-  table.decl-table tr:nth-child(even) td { background: var(--light-teal); }
-  .status-ok { color: var(--green); font-weight: 700; }
-  .status-bad { color: var(--red); font-weight: 700; }
 
-  #reportLink { margin-top: 14px; }
-  #reportLink a { color: var(--forest); font-weight: 700; }
+  /* ---------------- Results ---------------- */
+  #resultsCard { display: none; }
+  #resultsCard.show { display: block; animation: fadeInUp 0.5s ease both; }
+
+  .verdict-banner {
+    padding: 14px 18px; border-radius: 12px; font-weight: 700; font-size: 14.5px;
+    margin-bottom: 18px; animation: fadeInUp 0.45s ease both;
+  }
+  .verdict-banner.COMPLIANT { background: var(--success-bg); color: var(--success-text); }
+  .verdict-banner.NON_COMPLIANT {
+    background: var(--danger-bg); color: var(--danger-text);
+    animation: fadeInUp 0.45s ease both, pulseRing 2s ease-out 0.5s 2;
+  }
+  .verdict-banner.NEEDS_REVIEW { background: var(--warning-bg); color: var(--warning-text); }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 18px; }
+  .chip {
+    padding: 9px 16px; border-radius: 999px; font-size: 12.5px; font-weight: 700;
+    cursor: pointer; border: 1.5px solid transparent; user-select: none;
+    transition: transform .15s ease, box-shadow .15s ease;
+    animation: fadeInUp 0.35s ease both;
+  }
+  .chip:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 6px 14px rgba(0,0,0,0.25); }
+  .chip.ok { background: var(--success-bg); color: var(--success-text); border-color: #1F5C36; }
+  .chip.violation { background: var(--danger-bg); color: var(--danger-text); border-color: #6B2530; }
+  .chip.active { outline: 2px solid var(--saffron); outline-offset: 2px; }
+
+  .field-detail {
+    background: var(--bg-2);
+    border-left: 4px solid var(--saffron);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-size: 13.5px;
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height .3s ease, opacity .3s ease, padding .3s ease;
+    padding-top: 0; padding-bottom: 0;
+  }
+  .field-detail.visible { max-height: 300px; opacity: 1; padding-top: 16px; padding-bottom: 16px; }
+  .field-detail .row { margin-bottom: 6px; color: #D6DEE7; }
+  .field-detail .row b { color: var(--saffron-bright); }
+
+  table.decl-table { width: 100%; border-collapse: collapse; font-size: 13px; animation: fadeIn 0.4s ease both; }
+  table.decl-table th, table.decl-table td {
+    border: 1px solid var(--border); padding: 9px 11px; text-align: left; vertical-align: top;
+  }
+  table.decl-table th { background: linear-gradient(120deg, var(--saffron-bright), var(--green)); color: #1A1006; font-size: 12px; }
+  table.decl-table td { color: #D6DEE7; }
+  table.decl-table tr:nth-child(even) td { background: var(--bg-2); }
+  .status-ok { color: var(--success-text); font-weight: 700; }
+  .status-bad { color: var(--danger-text); font-weight: 700; }
+
+  #reportLink { margin-top: 16px; }
+  #reportLink a {
+    color: #1A1006; font-weight: 800; text-decoration: none;
+    background: linear-gradient(120deg, var(--saffron-bright), var(--green-bright));
+    padding: 10px 20px; border-radius: 999px; display: inline-block;
+    box-shadow: 0 6px 18px rgba(255,122,26,0.3);
+    animation: popIn 0.4s ease both;
+  }
 
   .hidden { display: none; }
 </style>
 </head>
 <body>
+
+<div class="flag-stripe"></div>
 
 <header>
   <h1>Legal Metrology Compliance Scanner</h1>
@@ -188,20 +301,21 @@
 
   <div class="card">
     <h2>1. Upload Product Label Photos</h2>
-    <div class="upload-row">
-      <div class="dropzone" id="dz-upload" onclick="document.getElementById('imageInput').click()">
-        <div class="label">Click to upload label photos</div>
-        <div class="hint">Up to 4 images — front, back, side, any angle with printed declarations</div>
-        <input type="file" id="imageInput" accept="image/*" multiple>
-      </div>
-      <div class="thumb-grid" id="thumbGrid"></div>
-      <div class="image-count" id="imageCount"></div>
+    <div class="dropzone" id="dz-upload">
+      <div class="label">Click or drag photos here</div>
+      <div class="hint">Up to 4 images — front, back, side, any angle with printed declarations</div>
+      <input type="file" id="imageInput" accept="image/*" multiple>
     </div>
-    <button class="btn" id="scanBtn" onclick="runScan()">Analyze Compliance</button>
+    <div class="thumb-grid" id="thumbGrid"></div>
+    <div class="image-count" id="imageCount"></div>
+    <button class="btn" id="scanBtn" onclick="runScan()">
+      <span class="spinner"></span>
+      <span class="btn-label">Analyze Compliance</span>
+    </button>
     <div class="status-line" id="statusLine"></div>
   </div>
 
-  <div class="card hidden" id="resultsCard">
+  <div class="card" id="resultsCard">
     <h2>2. Compliance Result</h2>
     <div id="verdictBanner" class="verdict-banner"></div>
 
@@ -222,11 +336,37 @@
 <script>
 let currentJobId = null;
 let currentResult = null;
-let selectedFiles = []; // array of File objects, max 4
+let selectedFiles = [];
 const MAX_IMAGES = 4;
 
-document.getElementById('imageInput').addEventListener('change', (e) => {
-  const newFiles = Array.from(e.target.files);
+const dz = document.getElementById('dz-upload');
+const imageInput = document.getElementById('imageInput');
+
+dz.addEventListener('click', () => imageInput.click());
+
+imageInput.addEventListener('change', (e) => {
+  addFiles(Array.from(e.target.files));
+  e.target.value = '';
+});
+
+['dragenter', 'dragover'].forEach(evt => {
+  dz.addEventListener(evt, (e) => {
+    e.preventDefault();
+    dz.classList.add('drag-over');
+  });
+});
+['dragleave', 'drop'].forEach(evt => {
+  dz.addEventListener(evt, (e) => {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+  });
+});
+dz.addEventListener('drop', (e) => {
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  addFiles(files);
+});
+
+function addFiles(newFiles) {
   for (const f of newFiles) {
     if (selectedFiles.length >= MAX_IMAGES) {
       alert(`You can upload up to ${MAX_IMAGES} images. Extra files were skipped.`);
@@ -234,9 +374,8 @@ document.getElementById('imageInput').addEventListener('change', (e) => {
     }
     selectedFiles.push(f);
   }
-  e.target.value = ''; // allow re-selecting the same file later
   renderThumbs();
-});
+}
 
 function renderThumbs() {
   const grid = document.getElementById('thumbGrid');
@@ -247,6 +386,7 @@ function renderThumbs() {
     const url = URL.createObjectURL(file);
     const thumb = document.createElement('div');
     thumb.className = 'thumb';
+    thumb.style.animationDelay = (idx * 0.06) + 's';
     thumb.innerHTML = `
       <img src="${url}">
       <div class="remove-btn" onclick="removeImage(${idx})">&times;</div>
@@ -278,32 +418,39 @@ async function runScan() {
   selectedFiles.forEach(f => formData.append('images', f));
 
   scanBtn.disabled = true;
+  scanBtn.classList.add('loading');
   statusLine.textContent = 'Uploading images and analysing declarations...';
+  statusLine.classList.add('shimmering');
 
   try {
     const res = await fetch('/scan', { method: 'POST', body: formData });
     const data = await res.json();
 
+    scanBtn.disabled = false;
+    scanBtn.classList.remove('loading');
+    statusLine.classList.remove('shimmering');
+
     if (!data.success) {
       statusLine.textContent = 'Error: ' + (data.error || 'Unknown error');
-      scanBtn.disabled = false;
       return;
     }
 
     currentJobId = data.job_id;
     currentResult = data.result;
     statusLine.textContent = `Done in ${data.elapsed_seconds}s.`;
-    scanBtn.disabled = false;
     renderResults(currentResult);
 
   } catch (err) {
-    statusLine.textContent = 'Request failed: ' + err.message;
     scanBtn.disabled = false;
+    scanBtn.classList.remove('loading');
+    statusLine.classList.remove('shimmering');
+    statusLine.textContent = 'Request failed: ' + err.message;
   }
 }
 
 function renderResults(result) {
-  document.getElementById('resultsCard').classList.remove('hidden');
+  const card = document.getElementById('resultsCard');
+  card.classList.add('show');
 
   const banner = document.getElementById('verdictBanner');
   banner.className = 'verdict-banner ' + result.overall_verdict;
@@ -312,9 +459,10 @@ function renderResults(result) {
 
   const chipRow = document.getElementById('chipRow');
   chipRow.innerHTML = '';
-  result.declarations.forEach(d => {
+  result.declarations.forEach((d, idx) => {
     const chip = document.createElement('div');
     chip.className = 'chip ' + (d.compliant ? 'ok' : 'violation');
+    chip.style.animationDelay = (idx * 0.05) + 's';
     chip.textContent = d.label + (d.compliant ? ' ✓' : ' ✕');
     chip.onclick = () => showField(d, chip);
     chipRow.appendChild(chip);
@@ -323,6 +471,8 @@ function renderResults(result) {
   document.getElementById('fieldDetail').classList.remove('visible');
   document.getElementById('tableWrap').classList.add('hidden');
   document.getElementById('reportLink').innerHTML = '';
+
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function showField(d, chipEl) {
@@ -330,7 +480,6 @@ function showField(d, chipEl) {
   chipEl.classList.add('active');
 
   const detail = document.getElementById('fieldDetail');
-  detail.classList.add('visible');
   detail.innerHTML = `
     <div class="row"><b>Field:</b> ${d.label}</div>
     <div class="row"><b>Found:</b> ${d.found ? 'Yes' : 'No'}</div>
@@ -341,6 +490,7 @@ function showField(d, chipEl) {
         : '<span class="status-bad">Non-compliant / Missing</span>'}</div>
     ${d.reason ? `<div class="row"><b>Reason:</b> ${d.reason}</div>` : ''}
   `;
+  detail.classList.add('visible');
 }
 
 function showTable() {
