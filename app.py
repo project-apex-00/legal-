@@ -22,7 +22,7 @@ load_dotenv()
 # ---------------------------------------------------------------------------
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
 ai_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
@@ -43,6 +43,17 @@ for d in (UPLOAD_DIR, OUTPUT_DIR, JOBS_DIR):
 
 app = Flask(__name__)
 jinja_env = Environment(loader=FileSystemLoader("templates"))
+
+def wrap_slashes(text):
+    """xhtml2pdf's renderer doesn't reliably break long slash-separated
+    words (e.g. 'manufacture/packing/import') even with CSS word-wrap,
+    so the last segment can overflow the table cell. Insert a zero-width
+    space after each '/' as an explicit break point."""
+    if not text:
+        return text
+    return text.replace("/", "/\u200b")
+
+jinja_env.filters["wrap_slashes"] = wrap_slashes
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 
@@ -153,7 +164,7 @@ def call_gemini_vision(prompt: str, image_paths: list, temperature: float = 0.1)
         response_mime_type="application/json",
     )
 
-    candidate_models = [GEMINI_MODEL, "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"]
+    candidate_models = [GEMINI_MODEL, "gemini-2.5-flash", "gemini-2.0-flash"]
     last_err = None
     hit_quota = False
 
