@@ -166,6 +166,35 @@
   .dropzone .hint { font-size: 12px; color: var(--grey); margin-top: 5px; }
   input[type=file] { display: none; }
 
+  .upload-options {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .upload-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: var(--bg-2);
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: border-color .2s ease, transform .15s ease, background .2s ease;
+  }
+  .upload-btn:hover { transform: translateY(-2px); }
+  .upload-btn.gallery:hover { border-color: var(--saffron); }
+  .upload-btn.camera:hover { border-color: var(--green-bright); }
+  .upload-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .upload-btn.gallery svg { stroke: var(--saffron-bright); }
+  .upload-btn.camera svg { stroke: var(--green-bright); }
+  .upload-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
   .thumb-grid { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 18px; }
   .thumb { position: relative; width: 128px; animation: popIn 0.35s cubic-bezier(.2,1.4,.4,1) both; }
   .thumb img {
@@ -301,10 +330,28 @@
 
   <div class="card">
     <h2>1. Upload Product Label Photos</h2>
+    <div class="upload-options">
+      <button type="button" class="upload-btn gallery" id="galleryBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <path d="M21 15l-5-5L5 21"></path>
+        </svg>
+        Choose from Gallery
+      </button>
+      <button type="button" class="upload-btn camera" id="cameraBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+        Take Photo
+      </button>
+    </div>
     <div class="dropzone" id="dz-upload">
       <div class="label">Click or drag photos here</div>
       <div class="hint">Up to 4 images — front, back, side, any angle with printed declarations</div>
       <input type="file" id="imageInput" accept="image/*" multiple>
+      <input type="file" id="cameraInput" accept="image/*" capture="environment">
     </div>
     <div class="thumb-grid" id="thumbGrid"></div>
     <div class="image-count" id="imageCount"></div>
@@ -341,10 +388,20 @@ const MAX_IMAGES = 4;
 
 const dz = document.getElementById('dz-upload');
 const imageInput = document.getElementById('imageInput');
+const cameraInput = document.getElementById('cameraInput');
+const galleryBtn = document.getElementById('galleryBtn');
+const cameraBtn = document.getElementById('cameraBtn');
 
 dz.addEventListener('click', () => imageInput.click());
+galleryBtn.addEventListener('click', () => imageInput.click());
+cameraBtn.addEventListener('click', () => cameraInput.click());
 
 imageInput.addEventListener('change', (e) => {
+  addFiles(Array.from(e.target.files));
+  e.target.value = '';
+});
+
+cameraInput.addEventListener('change', (e) => {
   addFiles(Array.from(e.target.files));
   e.target.value = '';
 });
@@ -398,6 +455,10 @@ function renderThumbs() {
   countLine.textContent = selectedFiles.length
     ? `${selectedFiles.length} of ${MAX_IMAGES} images selected`
     : '';
+
+  const atMax = selectedFiles.length >= MAX_IMAGES;
+  galleryBtn.disabled = atMax;
+  cameraBtn.disabled = atMax;
 }
 
 function removeImage(idx) {
