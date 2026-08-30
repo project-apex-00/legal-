@@ -37,11 +37,16 @@
     text-transform: uppercase; font-weight: bold;
   }
   .header h1 { font-size: 19pt; margin: 4px 0 6px 0; color: #14181A; }
-  .meta {
-    font-size: 8.5pt; color: #4A5751; display: flex;
-    justify-content: space-between; margin-top: 6px;
-    border-top: 1px solid #D7E0DB; padding-top: 6px;
+  .meta-table {
+    width: 100%;
+    margin-top: 6px;
+    border-top: 1px solid #D7E0DB;
+    padding-top: 6px;
   }
+  .meta-table td {
+    font-size: 8.5pt; color: #4A5751; padding: 0; border: none;
+  }
+  .meta-table td.meta-right { text-align: right; }
 
   .verdict {
     margin-top: 12px;
@@ -62,11 +67,25 @@
   }
 
   table.decl {
-    width: 100%; border-collapse: collapse; margin-top: 6px;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin-top: 6px;
   }
   table.decl th, table.decl td {
-    border: 1px solid #C7DAD7; padding: 6px 8px; font-size: 9pt; text-align: left;
+    border: 1px solid #C7DAD7;
+    padding: 6px 8px;
+    font-size: 8.5pt;
+    text-align: left;
+    vertical-align: top;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
+  table.decl col.col-field   { width: 20%; }
+  table.decl col.col-value   { width: 24%; }
+  table.decl col.col-source  { width: 10%; }
+  table.decl col.col-status  { width: 14%; }
+  table.decl col.col-reason  { width: 32%; }
   table.decl th { background-color: #2E8B84; color: #FFFFFF; font-weight: bold; }
   table.decl tr:nth-child(even) td { background-color: #E4F1F0; }
   .status-ok { color: #1E7A46; font-weight: bold; }
@@ -96,10 +115,10 @@
   <div class="header">
     <div class="org">Legal Metrology (Packaged Commodities) Rules, 2011 — Compliance Check</div>
     <h1>{{ report.product_name_guess }}</h1>
-    <div class="meta">
-      <span>Job ID: {{ report.job_id }}</span>
-      <span>Generated: {{ report.generated_on }}</span>
-    </div>
+    <table class="meta-table"><tr>
+      <td>Job ID: {{ report.job_id }}</td>
+      <td class="meta-right">Generated: {{ report.generated_on }}</td>
+    </tr></table>
   </div>
 
   <div class="verdict {{ report.overall_verdict }}">
@@ -109,6 +128,13 @@
 
   <h2 class="section">Declaration-by-Declaration Findings</h2>
   <table class="decl">
+    <colgroup>
+      <col class="col-field">
+      <col class="col-value">
+      <col class="col-source">
+      <col class="col-status">
+      <col class="col-reason">
+    </colgroup>
     <tr><th>Field</th><th>Detected Value</th><th>Source</th><th>Status</th><th>Reason</th></tr>
     {% for d in report.declarations %}
     <tr>
