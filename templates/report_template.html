@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: A4;
+    margin: 2.2cm 1.8cm 2.5cm 1.8cm;
+    @frame footer_frame {
+      -pdf-frame-content: footer_content;
+      bottom: 1cm;
+      margin-left: 1.8cm;
+      margin-right: 1.8cm;
+      height: 1cm;
+    }
+  }
+  body {
+    font-family: "Helvetica", "Arial", sans-serif;
+    color: #14181A;
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+  table.strata {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+  }
+  table.strata td { height: 5px; padding: 0; border: none; }
+  table.strata td.s1 { background-color: #14181A; }
+  table.strata td.s2 { background-color: #0F3D2E; }
+  table.strata td.s3 { background-color: #E8A33D; }
+  table.strata td.s4 { background-color: #2E8B84; }
+
+  .header { margin-bottom: 4px; }
+  .header .org {
+    font-size: 9pt; letter-spacing: 1px; color: #0F3D2E;
+    text-transform: uppercase; font-weight: bold;
+  }
+  .header h1 { font-size: 19pt; margin: 4px 0 6px 0; color: #14181A; }
+  .meta {
+    font-size: 8.5pt; color: #4A5751; display: flex;
+    justify-content: space-between; margin-top: 6px;
+    border-top: 1px solid #D7E0DB; padding-top: 6px;
+  }
+
+  .verdict {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 12pt;
+  }
+  .verdict.COMPLIANT { background-color: #E7F5EC; color: #1E7A46; }
+  .verdict.NON_COMPLIANT { background-color: #FBEAEA; color: #B3261E; }
+  .verdict.NEEDS_REVIEW { background-color: #FBEBD3; color: #7A4E12; }
+
+  h2.section {
+    font-size: 12pt; font-weight: bold; color: #FFFFFF;
+    background-color: #0F3D2E; padding: 5px 10px;
+    margin-top: 20px; margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  table.decl {
+    width: 100%; border-collapse: collapse; margin-top: 6px;
+  }
+  table.decl th, table.decl td {
+    border: 1px solid #C7DAD7; padding: 6px 8px; font-size: 9pt; text-align: left;
+  }
+  table.decl th { background-color: #2E8B84; color: #FFFFFF; font-weight: bold; }
+  table.decl tr:nth-child(even) td { background-color: #E4F1F0; }
+  .status-ok { color: #1E7A46; font-weight: bold; }
+  .status-bad { color: #B3261E; font-weight: bold; }
+
+  ul.violation-list { margin: 0; padding-left: 18px; }
+  ul.violation-list li { margin-bottom: 8px; }
+
+  .footer-note {
+    margin-top: 24px; font-size: 7.5pt; color: #7C8B85; text-align: center;
+  }
+  #footer_content {
+    font-size: 8pt; color: #4A5751; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <div id="footer_content">
+    Legal Metrology Compliance Report | Job {{ report.job_id }} | Page <pdf:pagenumber /> of <pdf:pagecount />
+  </div>
+
+  <table class="strata"><tr>
+    <td class="s1">&nbsp;</td><td class="s2">&nbsp;</td><td class="s3">&nbsp;</td><td class="s4">&nbsp;</td>
+  </tr></table>
+
+  <div class="header">
+    <div class="org">Legal Metrology (Packaged Commodities) Rules, 2011 — Compliance Check</div>
+    <h1>{{ report.product_name_guess }}</h1>
+    <div class="meta">
+      <span>Job ID: {{ report.job_id }}</span>
+      <span>Generated: {{ report.generated_on }}</span>
+    </div>
+  </div>
+
+  <div class="verdict {{ report.overall_verdict }}">
+    Overall Verdict: {{ report.overall_verdict.replace("_", " ") }}
+    {% if report.violation_count %} — {{ report.violation_count }} issue(s) found{% endif %}
+  </div>
+
+  <h2 class="section">Declaration-by-Declaration Findings</h2>
+  <table class="decl">
+    <tr><th>Field</th><th>Detected Value</th><th>Source</th><th>Status</th><th>Reason</th></tr>
+    {% for d in report.declarations %}
+    <tr>
+      <td>{{ d.label }}</td>
+      <td>{{ d.value or "—" }}</td>
+      <td>{{ d.source_image or "—" }}</td>
+      <td>
+        {% if d.compliant %}<span class="status-ok">Compliant</span>
+        {% else %}<span class="status-bad">Violation</span>{% endif %}
+      </td>
+      <td>{{ d.reason or "—" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2 class="section">Violations Summary</h2>
+  {% if report.violations %}
+  <ul class="violation-list">
+    {% for v in report.violations %}
+    <li><b>{{ v.label }}:</b> {{ v.reason or "Missing or non-compliant declaration." }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p><em>No violations found among the checked declarations.</em></p>
+  {% endif %}
+
+  <h2 class="section">Additional Observations</h2>
+  {% if report.additional_observations %}
+  <ul class="violation-list">
+    {% for obs in report.additional_observations %}
+    <li>{{ obs }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p><em>None noted.</em></p>
+  {% endif %}
+
+  <div class="footer-note">
+    Auto-generated draft report. Verify all findings against the physical product before
+    initiating any enforcement action. This tool is an assistive compliance check, not a
+    final legal determination.
+  </div>
+
+</body>
+</html>

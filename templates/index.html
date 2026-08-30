@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legal Metrology Compliance Scanner</title>
+<style>
+  :root {
+    --ink: #14181A;
+    --forest: #0F3D2E;
+    --amber: #E8A33D;
+    --teal: #2E8B84;
+    --light-teal: #E4F1F0;
+    --light-green: #E7EFEA;
+    --grey: #4A5751;
+    --red: #B3261E;
+    --red-bg: #FBEAEA;
+    --green-bg: #E7F5EC;
+    --green: #1E7A46;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    background: #F6F8F7;
+    color: var(--ink);
+  }
+  header {
+    background: var(--forest);
+    color: white;
+    padding: 18px 24px;
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header p { margin: 4px 0 0; font-size: 12.5px; color: #CFE4DA; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
+
+  .card {
+    background: white;
+    border: 1px solid #DCE6E1;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 15px;
+    color: var(--forest);
+    margin: 0 0 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .upload-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .dropzone {
+    flex: 1;
+    min-width: 220px;
+    border: 2px dashed #B9CFC5;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    background: #FAFCFB;
+    transition: border-color .15s;
+  }
+  .dropzone:hover { border-color: var(--teal); }
+  .dropzone.has-image { border-style: solid; border-color: var(--teal); }
+  .dropzone img { max-width: 100%; max-height: 160px; border-radius: 6px; margin-top: 8px; }
+  .dropzone .label { font-weight: 600; font-size: 13px; color: var(--forest); }
+  .dropzone .hint { font-size: 11.5px; color: var(--grey); margin-top: 4px; }
+  input[type=file] { display: none; }
+
+  .btn {
+    display: inline-block;
+    background: var(--forest);
+    color: white;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+  }
+  .btn:disabled { background: #9BB3A7; cursor: not-allowed; }
+  .btn.secondary { background: var(--teal); }
+  .btn.ghost { background: transparent; color: var(--forest); border: 1px solid var(--forest); }
+
+  .status-line { font-size: 13px; color: var(--grey); margin-top: 10px; min-height: 18px; }
+
+  .verdict-banner {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .verdict-banner.COMPLIANT { background: var(--green-bg); color: var(--green); }
+  .verdict-banner.NON_COMPLIANT { background: var(--red-bg); color: var(--red); }
+  .verdict-banner.NEEDS_REVIEW { background: #FBEBD3; color: #7A4E12; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .chip {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    user-select: none;
+  }
+  .chip.ok { background: var(--green-bg); color: var(--green); border-color: #BFE3CC; }
+  .chip.violation { background: var(--red-bg); color: var(--red); border-color: #F1C3C0; }
+  .chip.active { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+  .field-detail {
+    background: var(--light-green);
+    border-left: 4px solid var(--forest);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 13.5px;
+    display: none;
+  }
+  .field-detail.visible { display: block; }
+  .field-detail .row { margin-bottom: 6px; }
+  .field-detail .row b { color: var(--forest); }
+
+  table.decl-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.decl-table th, table.decl-table td {
+    border: 1px solid #DCE6E1; padding: 8px 10px; text-align: left; vertical-align: top;
+  }
+  table.decl-table th { background: var(--teal); color: white; font-size: 12px; }
+  table.decl-table tr:nth-child(even) td { background: var(--light-teal); }
+  .status-ok { color: var(--green); font-weight: 700; }
+  .status-bad { color: var(--red); font-weight: 700; }
+
+  #reportLink { margin-top: 14px; }
+  #reportLink a { color: var(--forest); font-weight: 700; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Legal Metrology Compliance Scanner</h1>
+  <p>Packaged Commodities Rules, 2011 — automated label declaration check</p>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <h2>1. Upload Product Label</h2>
+    <div class="upload-row">
+      <div class="dropzone" id="dz-front" onclick="document.getElementById('front').click()">
+        <div class="label">Front Label *</div>
+        <div class="hint">Click to upload</div>
+        <img id="preview-front" class="hidden">
+        <input type="file" id="front" accept="image/*">
+      </div>
+      <div class="dropzone" id="dz-back" onclick="document.getElementById('back').click()">
+        <div class="label">Back Label (optional)</div>
+        <div class="hint">Click to upload</div>
+        <img id="preview-back" class="hidden">
+        <input type="file" id="back" accept="image/*">
+      </div>
+    </div>
+    <button class="btn" id="scanBtn" onclick="runScan()">Analyze Compliance</button>
+    <div class="status-line" id="statusLine"></div>
+  </div>
+
+  <div class="card hidden" id="resultsCard">
+    <h2>2. Compliance Result</h2>
+    <div id="verdictBanner" class="verdict-banner"></div>
+
+    <div class="chip-row" id="chipRow"></div>
+    <div class="field-detail" id="fieldDetail"></div>
+
+    <div style="margin-top:20px;">
+      <button class="btn secondary" onclick="showTable()">View Full Declaration Table</button>
+      <button class="btn ghost" onclick="generateReport()">Generate PDF Report</button>
+    </div>
+
+    <div id="tableWrap" class="hidden" style="margin-top:18px;"></div>
+    <div id="reportLink"></div>
+  </div>
+
+</div>
+
+<script>
+let currentJobId = null;
+let currentResult = null;
+
+function bindPreview(inputId, dzId, previewId) {
+  document.getElementById(inputId).addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = document.getElementById(previewId);
+    img.src = url;
+    img.classList.remove('hidden');
+    document.getElementById(dzId).classList.add('has-image');
+  });
+}
+bindPreview('front', 'dz-front', 'preview-front');
+bindPreview('back', 'dz-back', 'preview-back');
+
+async function runScan() {
+  const frontFile = document.getElementById('front').files[0];
+  const backFile = document.getElementById('back').files[0];
+  const statusLine = document.getElementById('statusLine');
+  const scanBtn = document.getElementById('scanBtn');
+
+  if (!frontFile) {
+    statusLine.textContent = 'Please upload at least the front label image.';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('front', frontFile);
+  if (backFile) formData.append('back', backFile);
+
+  scanBtn.disabled = true;
+  statusLine.textContent = 'Uploading images and analysing declarations...';
+
+  try {
+    const res = await fetch('/scan', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (!data.success) {
+      statusLine.textContent = 'Error: ' + (data.error || 'Unknown error');
+      scanBtn.disabled = false;
+      return;
+    }
+
+    currentJobId = data.job_id;
+    currentResult = data.result;
+    statusLine.textContent = `Done in ${data.elapsed_seconds}s.`;
+    scanBtn.disabled = false;
+    renderResults(currentResult);
+
+  } catch (err) {
+    statusLine.textContent = 'Request failed: ' + err.message;
+    scanBtn.disabled = false;
+  }
+}
+
+function renderResults(result) {
+  document.getElementById('resultsCard').classList.remove('hidden');
+
+  const banner = document.getElementById('verdictBanner');
+  banner.className = 'verdict-banner ' + result.overall_verdict;
+  banner.textContent = 'Overall Verdict: ' + result.overall_verdict.replace('_', ' ')
+    + (result.product_name_guess ? '  ·  ' + result.product_name_guess : '');
+
+  const chipRow = document.getElementById('chipRow');
+  chipRow.innerHTML = '';
+  result.declarations.forEach(d => {
+    const chip = document.createElement('div');
+    chip.className = 'chip ' + (d.compliant ? 'ok' : 'violation');
+    chip.textContent = d.label + (d.compliant ? ' ✓' : ' ✕');
+    chip.onclick = () => showField(d, chip);
+    chipRow.appendChild(chip);
+  });
+
+  document.getElementById('fieldDetail').classList.remove('visible');
+  document.getElementById('tableWrap').classList.add('hidden');
+  document.getElementById('reportLink').innerHTML = '';
+}
+
+function showField(d, chipEl) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  chipEl.classList.add('active');
+
+  const detail = document.getElementById('fieldDetail');
+  detail.classList.add('visible');
+  detail.innerHTML = `
+    <div class="row"><b>Field:</b> ${d.label}</div>
+    <div class="row"><b>Found:</b> ${d.found ? 'Yes' : 'No'}</div>
+    <div class="row"><b>Value:</b> ${d.value || '—'}</div>
+    <div class="row"><b>Source image:</b> ${d.source_image || '—'}</div>
+    <div class="row"><b>Status:</b> ${d.compliant
+        ? '<span class="status-ok">Compliant</span>'
+        : '<span class="status-bad">Non-compliant / Missing</span>'}</div>
+    ${d.reason ? `<div class="row"><b>Reason:</b> ${d.reason}</div>` : ''}
+  `;
+}
+
+function showTable() {
+  const wrap = document.getElementById('tableWrap');
+  wrap.classList.toggle('hidden');
+  if (wrap.classList.contains('hidden')) return;
+
+  let rows = currentResult.declarations.map(d => `
+    <tr>
+      <td>${d.label}</td>
+      <td>${d.value || '—'}</td>
+      <td>${d.source_image || '—'}</td>
+      <td>${d.compliant ? '<span class="status-ok">Compliant</span>' : '<span class="status-bad">Violation</span>'}</td>
+      <td>${d.reason || '—'}</td>
+    </tr>
+  `).join('');
+
+  wrap.innerHTML = `
+    <table class="decl-table">
+      <tr><th>Field</th><th>Detected Value</th><th>Source</th><th>Status</th><th>Reason</th></tr>
+      ${rows}
+    </table>
+  `;
+}
+
+async function generateReport() {
+  if (!currentJobId) return;
+  const reportLink = document.getElementById('reportLink');
+  reportLink.textContent = 'Generating report...';
+
+  try {
+    const res = await fetch('/report/' + currentJobId, { method: 'POST' });
+    const data = await res.json();
+    if (!data.success) {
+      reportLink.textContent = 'Error: ' + (data.error || 'Unknown error');
+      return;
+    }
+    reportLink.innerHTML = `<a href="${data.pdf_url}" target="_blank">Open Compliance Report (PDF)</a>`;
+  } catch (err) {
+    reportLink.textContent = 'Request failed: ' + err.message;
+  }
+}
+</script>
+
+</body>
+</html>
