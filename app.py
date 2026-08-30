@@ -22,7 +22,7 @@ load_dotenv()
 # ---------------------------------------------------------------------------
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
 
 ai_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
@@ -153,7 +153,7 @@ def call_gemini_vision(prompt: str, image_paths: list, temperature: float = 0.1)
         response_mime_type="application/json",
     )
 
-    candidate_models = [GEMINI_MODEL, "gemini-2.5-flash", "gemini-2.5-flash-lite"]
+    candidate_models = [GEMINI_MODEL, "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"]
     last_err = None
     hit_quota = False
 
