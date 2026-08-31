@@ -16,8 +16,8 @@
   }
   body {
     font-family: "Helvetica", "Arial", sans-serif;
-    color: #EAF0F6;
-    background-color: #0B0F14;
+    color: #000000;
+    background-color: #FFFFFF;
     font-size: 10.5pt;
     line-height: 1.5;
   }
@@ -28,20 +28,20 @@
   }
   table.strata td { height: 5px; padding: 0; border: none; }
   table.strata td.s1 { background-color: #FF9933; }
-  table.strata td.s2 { background-color: #FFFFFF; }
+  table.strata td.s2 { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; }
   table.strata td.s3 { background-color: #138808; }
-  table.strata td.s4 { background-color: #0B1F66; }
+  table.strata td.s4 { background-color: #7B3F00; }
 
   .header { margin-bottom: 4px; }
   .header .org {
-    font-size: 9pt; letter-spacing: 1px; color: #FF9933;
+    font-size: 9pt; letter-spacing: 1px; color: #7B3F00;
     text-transform: uppercase; font-weight: bold;
   }
-  .header h1 { font-size: 19pt; margin: 4px 0 6px 0; color: #FFFFFF; }
+  .header h1 { font-size: 19pt; margin: 4px 0 6px 0; color: #7B3F00; }
   .meta {
-    font-size: 8.5pt; color: #93A1B0; display: flex;
+    font-size: 8.5pt; color: #333333; display: flex;
     justify-content: space-between; margin-top: 6px;
-    border-top: 1px solid #262F3A; padding-top: 6px;
+    border-top: 1px solid #CCCCCC; padding-top: 6px;
   }
 
   .verdict {
@@ -50,15 +50,16 @@
     border-radius: 4px;
     font-weight: bold;
     font-size: 12pt;
-    border: 1px solid #262F3A;
+    border: 1px solid #CCCCCC;
+    color: #000000;
   }
-  .verdict.COMPLIANT { background-color: #10331F; color: #4ADE80; }
-  .verdict.NON_COMPLIANT { background-color: #3A1418; color: #FB7185; }
-  .verdict.NEEDS_REVIEW { background-color: #3A2B0E; color: #FBBF24; }
+  .verdict.COMPLIANT { background-color: #E3F5E9; color: #0F7A3D; }
+  .verdict.NON_COMPLIANT { background-color: #FBE4E6; color: #B3202E; }
+  .verdict.NEEDS_REVIEW { background-color: #FDF1DC; color: #8A5A00; }
 
   h2.section {
     font-size: 12pt; font-weight: bold; color: #FFFFFF;
-    background-color: #151B24; border-left: 4px solid #FF9933;
+    background-color: #7B3F00; border-left: 4px solid #FF9933;
     padding: 5px 10px;
     margin-top: 20px; margin-bottom: 10px;
     text-transform: uppercase; letter-spacing: 0.5px;
@@ -68,24 +69,24 @@
     width: 100%; border-collapse: collapse; margin-top: 6px;
   }
   table.decl th, table.decl td {
-    border: 1px solid #262F3A; padding: 6px 8px; font-size: 9pt; text-align: left;
-    color: #EAF0F6;
+    border: 1px solid #CCCCCC; padding: 6px 8px; font-size: 9pt; text-align: left;
+    color: #000000;
   }
-  table.decl th { background-color: #138808; color: #FFFFFF; font-weight: bold; }
-  table.decl tr:nth-child(even) td { background-color: #151B24; }
-  table.decl tr:nth-child(odd) td { background-color: #10151D; }
-  .status-ok { color: #4ADE80; font-weight: bold; }
-  .status-bad { color: #FB7185; font-weight: bold; }
+  table.decl th { background-color: #7B3F00; color: #FFFFFF; font-weight: bold; }
+  table.decl tr:nth-child(even) td { background-color: #F7F2EC; }
+  table.decl tr:nth-child(odd) td { background-color: #FFFFFF; }
+  .status-ok { color: #0F7A3D; font-weight: bold; }
+  .status-bad { color: #B3202E; font-weight: bold; }
 
   ul.violation-list { margin: 0; padding-left: 18px; }
-  ul.violation-list li { margin-bottom: 8px; color: #D6DEE7; }
-  ul.violation-list li b { color: #FF9933; }
+  ul.violation-list li { margin-bottom: 8px; color: #000000; }
+  ul.violation-list li b { color: #7B3F00; }
 
   .footer-note {
-    margin-top: 24px; font-size: 7.5pt; color: #93A1B0; text-align: center;
+    margin-top: 24px; font-size: 7.5pt; color: #555555; text-align: center;
   }
   #footer_content {
-    font-size: 8pt; color: #93A1B0; text-align: center;
+    font-size: 8pt; color: #555555; text-align: center;
   }
 </style>
 </head>
